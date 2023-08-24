@@ -39,24 +39,28 @@ void WindowApp::shaders_config()
 {
     const char* vertexShaderSource = "#version 330 core\n"
         "layout (location = 0) in vec3 aPos;\n"
+        "out vec4 vertexColor;\n"
         "void main()\n"
         "{\n"
         "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+        "   vertexColor = vec4(0.5, 0.0, 0.0, 1.0);\n"
         "}\0";
 
     const char* fragmentShaderSource[2] = {
         "#version 330 core\n"
         "out vec4 FragColor;\n"
+        "in vec4 vertexColor;\n"
         "void main()\n"
         "{\n"
-        "    FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "    FragColor = vertexColor;\n"
         "}\0"
         ,
         "#version 330 core\n"
         "out vec4 FragColor;\n"
+        "uniform vec4 myColor;\n"
         "void main()\n"
         "{\n"
-        "    FragColor = vec4(1.0f, 1.0f, 0.3f, 1.0f);\n"
+        "    FragColor = myColor;\n"
         "}\0"
     };
 
@@ -163,6 +167,16 @@ void WindowApp::run_loop()
         for (int i = 0; i < 2; i++)
         {
             glUseProgram(shaderProgram[i]);
+
+            // update the uniform color
+            if (i == 1)
+            {
+                float timeValue = glfwGetTime();
+                float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
+                int vertexColorLocation = glGetUniformLocation(shaderProgram[i], "myColor");
+                glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+            }
+
             glBindVertexArray(VAO[i]);
             //glDrawArrays(GL_TRIANGLES, 0, 6);
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);

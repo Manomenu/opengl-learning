@@ -1,2 +1,3 @@
 ﻿  WindowApp.cpp
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(174,33): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   opengl-initial.vcxproj -> D:\prog\opengl\opengl-initial\x64\Debug\opengl-initial.exe
