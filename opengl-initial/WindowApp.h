@@ -1,15 +1,15 @@
 #pragma once
-#include <glad/glad.h>
+#include "Shader.h"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
-#include <iostream>
+
 
 class WindowApp
 {
 private:
 	GLFWwindow* window;
     float vertices[18];
-	unsigned int shaderProgram;
+	Shader* shader;
     unsigned int indices[3];
 	unsigned int EBO;
 	GLuint VAO, VBO;
