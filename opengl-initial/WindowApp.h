@@ -8,11 +8,11 @@ class WindowApp
 {
 private:
 	GLFWwindow* window;
-    float vertices[2][9];
-	unsigned int shaderProgram[2];
+    float vertices[18];
+	unsigned int shaderProgram;
     unsigned int indices[3];
 	unsigned int EBO;
-	GLuint VAO[2], VBO[2];
+	GLuint VAO, VBO;
 	void graphics_config();
 	void shaders_config();
 
