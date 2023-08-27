@@ -20,6 +20,7 @@ private:
 	unsigned int EBO;
 	GLuint VAO, VBO;
 	TextureData textureData;
+	TextureData textureDataContainer;
 	void graphics_config();
 	void shaders_config();
 	void textureData_config();

@@ -36,6 +36,25 @@ void WindowApp::textureData_config()
     else
         std::cout << "Failed to load texture" << std::endl;
     stbi_image_free(td.data);
+
+    TextureData& c = textureDataContainer;
+    glGenTextures(1, &c.texture);
+    glBindTexture(GL_TEXTURE_2D, c.texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    c.data = stbi_load("./images/container.jpg", &c.width, &c.height, &c.nrChannels, 0);
+    if (c.data)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, c.width, c.height, 0, GL_RGB,
+            GL_UNSIGNED_BYTE, c.data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+        std::cout << "Failed to load texture" << std::endl;
+    stbi_image_free(c.data);
 }
 
 void WindowApp::graphics_config()
@@ -88,10 +107,10 @@ WindowApp::WindowApp() :
     vertices 
     {
         // positions          // colors           // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
-         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   2.0f, 2.0f,   // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   2.0f, 0.0f,   // bottom right
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
-        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 2.0f    // top left 
     },
     indices { 0, 1, 3, 1, 2, 3 }
 {
@@ -119,6 +138,11 @@ WindowApp::WindowApp() :
 
 void WindowApp::run_loop()
 {
+    shader->use();
+    shader->setFloat("horizontalOffset", 0.3);
+    shader->setInt("texture1", 0);
+    shader->setInt("texture2", 1);
+
     while (!glfwWindowShouldClose(window))
     {
         // input
@@ -136,9 +160,11 @@ void WindowApp::run_loop()
         float timeValue = (float)glfwGetTime();
         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
         shader->setFloat("myColor", greenValue);
-        shader->setFloat("horizontalOffset", 0.3);
 
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureData.texture);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, textureDataContainer.texture);
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
