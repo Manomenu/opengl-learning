@@ -1,8 +1,13 @@
 #version 330 core
+
 out vec4 FragColor;
-// in vec3 vertexColor;
+
+in vec2 TexCoord;
 in vec3 posVec;
+
+uniform sampler2D myTexture;
+
 void main()
 {
-    FragColor = vec4(posVec, 1.0);
+    FragColor = texture(myTexture, TexCoord);
 };

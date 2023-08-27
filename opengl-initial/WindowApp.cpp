@@ -18,16 +18,15 @@ void processInput(GLFWwindow* window)
 
 void WindowApp::textureData_config()
 {
-    unsigned int texture;
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    TextureData& td = textureData;
+    glGenTextures(1, &td.texture);
+    glBindTexture(GL_TEXTURE_2D, td.texture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);    
     
-    TextureData& td = textureData;
-    td.data = stbi_load("./textures/baboon.jpg", &td.width, &td.height, &td.nrChannels, 0);
+    td.data = stbi_load("./images/baboon.jpg", &td.width, &td.height, &td.nrChannels, 0);
     if (td.data)
     {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, td.width, td.height, 0, GL_RGB,
@@ -51,11 +50,15 @@ void WindowApp::graphics_config()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // texture attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
@@ -75,14 +78,22 @@ WindowApp::WindowApp() :
     //    -0.5f, -0.5f, 0.0f,  // bottom left
     //},
     //indices { 0, 1, 3, 1, 2, 3 }
+    //vertices 
+    //{
+    //        // positions         // colors
+    //     0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
+    //    -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
+    //     0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+    //},
     vertices 
     {
-            // positions         // colors
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,   // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,   // bottom left
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f    // top 
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     },
-    indices { 2, 1, 0 }
+    indices { 0, 2, 3, 0 , 2, 1 }
 {
 
     if (glfwInit() == GLFW_FALSE)
@@ -102,8 +113,8 @@ WindowApp::WindowApp() :
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
     shaders_config();
-
     graphics_config();
+    textureData_config();
 }
 
 void WindowApp::run_loop()
@@ -127,6 +138,7 @@ void WindowApp::run_loop()
         shader->setFloat("myColor", greenValue);
         shader->setFloat("horizontalOffset", 0.3);
 
+        glBindTexture(GL_TEXTURE_2D, textureData.texture);
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);

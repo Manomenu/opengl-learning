@@ -11,11 +11,12 @@ private:
 	{
 		int width, height, nrChannels;
 		unsigned char* data;
+		unsigned int texture;
 	};
 	GLFWwindow* window;
-    float vertices[18];
+    float vertices[32];
 	Shader* shader;
-    unsigned int indices[3];
+    unsigned int indices[6];
 	unsigned int EBO;
 	GLuint VAO, VBO;
 	TextureData textureData;
