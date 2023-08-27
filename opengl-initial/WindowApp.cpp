@@ -99,6 +99,7 @@ void WindowApp::run_loop()
         float timeValue = (float)glfwGetTime();
         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
         shader->setFloat("myColor", greenValue);
+        shader->setFloat("horizontalOffset", 0.3);
 
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
