@@ -93,7 +93,7 @@ WindowApp::WindowApp() :
         -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
         -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left 
     },
-    indices { 0, 2, 3, 0 , 2, 1 }
+    indices { 0, 1, 3, 1, 2, 3 }
 {
 
     if (glfwInit() == GLFW_FALSE)
@@ -141,7 +141,7 @@ void WindowApp::run_loop()
         glBindTexture(GL_TEXTURE_2D, textureData.texture);
         glBindVertexArray(VAO);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

@@ -1,5 +1,3 @@
 ﻿  WindowApp.cpp
 D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(139,49): warning C4305: 'argument': truncation from 'double' to 'float'
-  main.cpp
-  Generating Code...
   opengl-initial.vcxproj -> D:\prog\opengl\opengl-initial\x64\Debug\opengl-initial.exe
