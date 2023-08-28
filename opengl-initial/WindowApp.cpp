@@ -138,6 +138,10 @@ WindowApp::WindowApp() :
 
 void WindowApp::run_loop()
 {
+    /*glm::mat4 trans = glm::mat4(1.0f);*/
+    //trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+    //trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5));
+
     shader->use();
     shader->setFloat("horizontalOffset", 0.3);
     shader->setInt("texture1", 0);
@@ -161,6 +165,11 @@ void WindowApp::run_loop()
         float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
         shader->setFloat("myColor", greenValue);
 
+        glm::mat4 trans = glm::mat4(1.0f);
+        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        shader->setMat4("transform", trans);
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureData.texture);
         glActiveTexture(GL_TEXTURE1);
@@ -178,7 +187,7 @@ void WindowApp::run_loop()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shader->ID);
+    delete shader;
     glfwTerminate();
 }
 
