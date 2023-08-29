@@ -14,13 +14,12 @@ private:
 		unsigned int texture;
 	};
 	GLFWwindow* window;
-    float vertices[32];
+    float vertices[36 * 5];
 	Shader* shader;
-    unsigned int indices[6];
-	unsigned int EBO;
 	GLuint VAO, VBO;
 	TextureData textureData;
 	TextureData textureDataContainer;
+	glm::vec3 cubePositions[10];
 	void graphics_config();
 	void shaders_config();
 	void textureData_config();
