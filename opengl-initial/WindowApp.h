@@ -20,9 +20,13 @@ private:
 	TextureData textureData;
 	TextureData textureDataContainer;
 	glm::vec3 cubePositions[10];
+	glm::vec3 cameraPos;
+	glm::vec3 cameraFront;
+	glm::vec3 cameraUp;
 	void graphics_config();
 	void shaders_config();
 	void textureData_config();
+	void processInput();
 
 public:
 	WindowApp();

@@ -10,10 +10,20 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window)
+void WindowApp::processInput()
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    const float cameraSpeed = 0.004f; // adjust accordingly
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
 }
 
 void WindowApp::textureData_config()
@@ -142,7 +152,10 @@ WindowApp::WindowApp() :
         glm::vec3(1.5f,  2.0f, -2.5f),
         glm::vec3(1.5f,  0.2f, -1.5f),
         glm::vec3(-1.3f,  1.0f, -1.5f)
-    }
+    },
+    cameraPos { glm::vec3(0.0f, 0.0f, 3.0f) },
+    cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) },
+    cameraUp { glm::vec3(0.0f, 1.0f, 0.0f) }
 {
 
     if (glfwInit() == GLFW_FALSE)
@@ -164,15 +177,20 @@ WindowApp::WindowApp() :
     shaders_config();
     graphics_config();
     textureData_config();
+
+    cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+
 }
 
 void WindowApp::run_loop()
 {
+    
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
     glm::mat4 projection;
     projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     shader->use();
-    shader->setFloat("horizontalOffset", 0.3);
     shader->setInt("texture1", 0);
     shader->setInt("texture2", 1);
     shader->setMat4("projection", projection);
@@ -183,7 +201,7 @@ void WindowApp::run_loop()
     {
         // input
         // -----
-        processInput(window);
+        processInput();
 
         // render
         // ------
@@ -196,12 +214,8 @@ void WindowApp::run_loop()
         glBindTexture(GL_TEXTURE_2D, textureData.texture);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textureDataContainer.texture);
-
-        glm::mat4 view = glm::mat4(1.0f);
-        // note that we're translating the scene in the reverse direction of where we want to move
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -20.0f));
-        view = glm::rotate(view, (float)glfwGetTime() * glm::radians(40.0f), glm::vec3(-1.0f, 1.0f, 0.0f));
         
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
         shader->setMat4("view", view);
 
         glBindVertexArray(VAO);
