@@ -1,29 +1,147 @@
 #include "WindowApp.h"
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
 #define ERR(source) (perror(source), fprintf(stdout, "%s:%d\n", __FILE__, __LINE__), glfwTerminate(), exit(EXIT_FAILURE))
+
+const int WIDTH = 800;
+const int HEIGHT = 600;
+const int VERSION_MAJOR = 3;
+const int VERSION_MINOR = 3;
+const glm::vec4 BACKGROUNDCOLOR = glm::vec4(0.2f, 0.3f, 0.3f, 1.0f);
+
+float WindowApp::lastX = WIDTH / 2.0f;
+float WindowApp::lastY = HEIGHT / 2.0f;
+Camera* WindowApp::camera = new Camera();
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
     glViewport(0, 0, width, height);
 }
 
+void WindowApp::mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (camera->firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        camera->firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates range from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+    camera->ProcessMouseMovement(xoffset, yoffset);
+}
+
+void WindowApp::scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera->ProcessMouseScroll(yoffset);
+}
+
+WindowApp::WindowApp() :
+    vertices
+{
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+},
+cubePositions
+{
+    glm::vec3(0.0f,  0.0f,  -20.0f),
+    glm::vec3(2.0f,  5.0f, -15.0f),
+    glm::vec3(-1.5f, -2.2f, -2.5f),
+    glm::vec3(-3.8f, -2.0f, -12.3f),
+    glm::vec3(2.4f, -0.4f, -3.5f),
+    glm::vec3(-1.7f,  3.0f, -7.5f),
+    glm::vec3(1.3f, -2.0f, -2.5f),
+    glm::vec3(1.5f,  2.0f, -2.5f),
+    glm::vec3(1.5f,  0.2f, -1.5f),
+    glm::vec3(-1.3f,  1.0f, -1.5f)
+},
+lastFrame{ 0.0f },
+deltaTime{ 0.0f }
+{
+    if (glfwInit() == GLFW_FALSE)
+        ERR("glfwInit");
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, VERSION_MAJOR);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, VERSION_MINOR);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    wd.height = HEIGHT;
+    wd.width = WIDTH;
+    wd.window = glfwCreateWindow(wd.width, wd.height, "Sztanga Window", NULL, NULL);
+
+    if (!wd.window)
+        ERR("Failed to create GLFW window");
+    glfwMakeContextCurrent(wd.window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+        ERR("Failed to initialize GLAD");
+
+    glfwSetFramebufferSizeCallback(wd.window, framebuffer_size_callback);
+
+    shaders_config();
+    graphics_config();
+    textureData_config();
+    camera_config();
+}
+
 void WindowApp::processInput()
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
+    float currentFrame = glfwGetTime();
+    deltaTime = currentFrame - lastFrame;
+    lastFrame = currentFrame;
 
-    const float cameraSpeed = 0.004f; // adjust accordingly
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(wd.window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(wd.window, true);
+    if (glfwGetKey(wd.window, GLFW_KEY_W) == GLFW_PRESS)
+        camera->ProcessKeyboard(Camera_Movement::FORWARD, deltaTime);
+    if (glfwGetKey(wd.window, GLFW_KEY_S) == GLFW_PRESS)
+        camera->ProcessKeyboard(Camera_Movement::BACKWARD, deltaTime);
+    if (glfwGetKey(wd.window, GLFW_KEY_A) == GLFW_PRESS)
+        camera->ProcessKeyboard(Camera_Movement::LEFT, deltaTime);
+    if (glfwGetKey(wd.window, GLFW_KEY_D) == GLFW_PRESS)
+        camera->ProcessKeyboard(Camera_Movement::RIGHT, deltaTime);
 }
 
 void WindowApp::textureData_config()
@@ -95,109 +213,23 @@ void WindowApp::shaders_config()
     shader = new Shader("./shaders/shader.vs", "./shaders/shader.fs");
 }
 
-WindowApp::WindowApp() : 
-    vertices 
-    {
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    },
-    cubePositions
-    {
-        glm::vec3(0.0f,  0.0f,  -20.0f),
-        glm::vec3(2.0f,  5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f,  3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f,  2.0f, -2.5f),
-        glm::vec3(1.5f,  0.2f, -1.5f),
-        glm::vec3(-1.3f,  1.0f, -1.5f)
-    },
-    cameraPos { glm::vec3(0.0f, 0.0f, 3.0f) },
-    cameraFront { glm::vec3(0.0f, 0.0f, -1.0f) },
-    cameraUp { glm::vec3(0.0f, 1.0f, 0.0f) }
+void WindowApp::camera_config()
 {
-
-    if (glfwInit() == GLFW_FALSE)
-        ERR("glfwInit");
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    window = glfwCreateWindow(800, 600, "Sztanga Window", NULL, NULL);
-    if (!window)
-        ERR("Failed to create GLFW window");
-    glfwMakeContextCurrent(window);
-
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-        ERR("Failed to initialize GLAD");
-
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-
-    shaders_config();
-    graphics_config();
-    textureData_config();
-
-    cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-
+    glfwSetInputMode(wd.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(wd.window, mouse_callback);
+    glfwSetScrollCallback(wd.window, scroll_callback);
 }
 
 void WindowApp::run_loop()
 {
-    
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-    glm::mat4 projection;
-    projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
     shader->use();
     shader->setInt("texture1", 0);
     shader->setInt("texture2", 1);
-    shader->setMat4("projection", projection);
+    
 
     glEnable(GL_DEPTH_TEST);
 
-    while (!glfwWindowShouldClose(window))
+    while (!glfwWindowShouldClose(wd.window))
     {
         // input
         // -----
@@ -205,7 +237,12 @@ void WindowApp::run_loop()
 
         // render
         // ------
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClearColor(
+            BACKGROUNDCOLOR.x, 
+            BACKGROUNDCOLOR.y, 
+            BACKGROUNDCOLOR.y, 
+            BACKGROUNDCOLOR.z
+        );
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         shader->use();
@@ -215,8 +252,10 @@ void WindowApp::run_loop()
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, textureDataContainer.texture);
         
-        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-        shader->setMat4("view", view);
+        shader->setMat4("view", camera->GetViewMatrix());
+
+        glm::mat4 projection = glm::perspective(glm::radians(camera->Zoom), wd.width / (float)wd.height, 0.1f, 100.0f);
+        shader->setMat4("projection", projection);
 
         glBindVertexArray(VAO);
         for (int i = 0; i < sizeof(cubePositions) / sizeof(glm::vec3); i++)
@@ -234,7 +273,7 @@ void WindowApp::run_loop()
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(wd.window);
         glfwPollEvents();
     }
     glDeleteVertexArrays(1, &VAO);

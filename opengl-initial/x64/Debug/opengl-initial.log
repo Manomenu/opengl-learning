@@ -1,2 +1,10 @@
 ﻿  WindowApp.cpp
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(26,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(27,17): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(31,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(32,19): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(33,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(34,13): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(40,32): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+D:\prog\opengl\opengl-initial\opengl-initial\WindowApp.cpp(131,24): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
   opengl-initial.vcxproj -> D:\prog\opengl\opengl-initial\x64\Debug\opengl-initial.exe
